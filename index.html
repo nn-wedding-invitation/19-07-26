@@ -725,34 +725,6 @@
         </p>
       </section>
 
-      <script>
-  const photoModal = document.getElementById('photoModal');
-  const openPhotoModal = document.getElementById('openPhotoModal');
-  const closePhotoModal = document.getElementById('closePhotoModal');
-  const closePhotoModalBtn = document.getElementById('closePhotoModalBtn');
-
-  if (openPhotoModal && photoModal) {
-    openPhotoModal.addEventListener('click', () => {
-      photoModal.classList.add('is-open');
-      photoModal.setAttribute('aria-hidden', 'false');
-    });
-  }
-
-  function closeModal() {
-    photoModal.classList.remove('is-open');
-    photoModal.setAttribute('aria-hidden', 'true');
-  }
-
-  if (closePhotoModal) closePhotoModal.addEventListener('click', closeModal);
-  if (closePhotoModalBtn) closePhotoModalBtn.addEventListener('click', closeModal);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && photoModal.classList.contains('is-open')) {
-      closeModal();
-    }
-  });
-</script>
-
       <section class="block timing-card" data-reveal>
         <div class="section-head">
           <div class="section-eyebrow">План дня</div>
