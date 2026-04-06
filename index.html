@@ -721,9 +721,37 @@
     <main class="container">
       <section class="block message" data-reveal>
         <p>
-          Дорогие родные и близкие, мы счастливы пригласить вас разделить с нами радость особенного и важного для нас дня — нашей свадьбы, которая состоится 19 июля 2026 года.
+          Дорогие родные и близкие, мы счастливы пригласить вас разделить с нами радость важного для нас дня — нашей свадьбы, которая состоится 19 июля 2026 года!
         </p>
       </section>
+
+      <script>
+  const photoModal = document.getElementById('photoModal');
+  const openPhotoModal = document.getElementById('openPhotoModal');
+  const closePhotoModal = document.getElementById('closePhotoModal');
+  const closePhotoModalBtn = document.getElementById('closePhotoModalBtn');
+
+  if (openPhotoModal && photoModal) {
+    openPhotoModal.addEventListener('click', () => {
+      photoModal.classList.add('is-open');
+      photoModal.setAttribute('aria-hidden', 'false');
+    });
+  }
+
+  function closeModal() {
+    photoModal.classList.remove('is-open');
+    photoModal.setAttribute('aria-hidden', 'true');
+  }
+
+  if (closePhotoModal) closePhotoModal.addEventListener('click', closeModal);
+  if (closePhotoModalBtn) closePhotoModalBtn.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && photoModal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+</script>
 
       <section class="block timing-card" data-reveal>
         <div class="section-head">
@@ -768,44 +796,6 @@
               <div class="timing-place">Завершение вечера</div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="block organizer-card" data-reveal>
-        <div class="section-head">
-          <div class="section-eyebrow">Детали</div>
-          <div class="section-script">детали</div>
-        </div>
-        <div class="section-intro">Здесь собрали несколько важных моментов, которые помогут вам заранее всё спланировать.</div>
-        <div class="details-wrap">
-          <details class="detail-item">
-            <summary>
-              <span>Что надо знать о сюрпризах и поздравлениях?</span>
-              <span class="plus">+</span>
-            </summary>
-            <div class="detail-content">
-              Нам будет очень приятно услышать ваши тёплые слова, поздравления и добрые пожелания. Если вы захотите подготовить сюрприз или творческое выступление, пожалуйста, заранее свяжитесь с нашим организатором — так она сможет бережно и красиво включить всё в программу вечера.            </div>
-          </details>
-
-          <details class="detail-item">
-            <summary>
-              <span>Что насчёт цветов?</span>
-              <span class="plus">+</span>
-            </summary>
-            <div class="detail-content">
-              Нам будет очень приятно любое ваше внимание. И хотя цветы всегда прекрасны, если вам захочется выбрать что-то другое, вместо букета можно подарить бутылку вина или шампанского — такой подарок останется с нами и ещё не раз напомнит о вашем тепле и этом счастливом дне.
-            </div>
-          </details>
-
-          <details class="detail-item">
-            <summary>
-              <span>Что взять с собой?</span>
-              <span class="plus">+</span>
-            </summary>
-            <div class="detail-content">
-              Хорошее настроение! Веселитесь, танцуйте, побольше фотографируйте и проживайте самые счастливые моменты вместе с нами.
-            </div>
-          </details>
         </div>
       </section>
 
@@ -915,6 +905,44 @@
 
       <section class="block organizer-card" data-reveal>
         <div class="section-head">
+          <div class="section-eyebrow">Детали</div>
+          <div class="section-script">детали</div>
+        </div>
+        <div class="section-intro">Здесь собрали несколько важных моментов, которые помогут вам заранее всё спланировать.</div>
+        <div class="details-wrap">
+          <details class="detail-item">
+            <summary>
+              <span>Что надо знать о сюрпризах и поздравлениях?</span>
+              <span class="plus">+</span>
+            </summary>
+            <div class="detail-content">
+              Нам будет очень приятно услышать ваши тёплые слова, поздравления и добрые пожелания. Если вы захотите подготовить сюрприз или творческое выступление, пожалуйста, заранее свяжитесь с нашим организатором — она с радостью включит его в программу вечера.            </div>
+          </details>
+
+          <details class="detail-item">
+            <summary>
+              <span>Что насчёт цветов?</span>
+              <span class="plus">+</span>
+            </summary>
+            <div class="detail-content">
+              Нам будет очень приятно любое ваше внимание. И хотя цветы всегда прекрасны, если вам захочется выбрать что-то другое, вместо букета можно подарить бутылку вина или шампанского — такой подарок останется с нами и ещё не раз напомнит о вашем тепле и этом счастливом дне.
+            </div>
+          </details>
+
+          <details class="detail-item">
+            <summary>
+              <span>Что взять с собой?</span>
+              <span class="plus">+</span>
+            </summary>
+            <div class="detail-content">
+              Хорошее настроение! Веселитесь, танцуйте, фотографируйте и проживайтесчастливые моменты вместе с нами.
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="block organizer-card" data-reveal>
+        <div class="section-head">
           <div class="section-eyebrow">Организатор</div>
           <div class="section-script">организатор</div>
         </div>
@@ -958,23 +986,13 @@
             </select>
           </div>
 
-          <div class="field">
-            <label for="plusOne">Вы будете одни или с +1?</label>
-            <select id="plusOne" name="plusOne" required>
-              <option value="">Выберите вариант</option>
-              <option>Буду один / одна</option>
-              <option>Буду с +1</option>
-            </select>
-          </div>
-
           <button class="submit" type="submit">Отправить ответ</button>
-          <div class="status" id="formStatus">Форма готова к отправке</div>
         </form>
       </section>
     </main>
 
     <footer class="footer" data-reveal>
-      С любовью ждём встречи с вами в этот особенный день.
+   Ждём встречи с вами в этот особенный день!
     </footer>
   </div>
 
@@ -1008,7 +1026,6 @@
         firstName: form.elements.firstName.value.trim(),
         lastName: form.elements.lastName.value.trim(),
         attendance: form.elements.attendance.value,
-        plusOne: form.elements.plusOne.value,
         submittedAt: new Date().toISOString()
       };
 
