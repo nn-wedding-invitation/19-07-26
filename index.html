@@ -94,7 +94,7 @@
       font-size: clamp(4.8rem, 12vw, 8rem);
       line-height: 0.9;
       letter-spacing: 0.04em;
-      color: rgba(255,255,255,0.24);
+      color: rgba(255,255,255,1);
       font-weight: 700;
       text-align: left;
       user-select: none;
@@ -907,7 +907,7 @@
               <span class="plus">+</span>
             </summary>
             <div class="detail-content">
-              Хорошее настроение! Веселитесь, танцуйте, фотографируйте и проживайтесчастливые моменты вместе с нами.
+              Хорошее настроение! Веселитесь, танцуйте, фотографируйте и проживайте счастливые моменты вместе с нами.
             </div>
           </details>
         </div>
@@ -959,6 +959,7 @@
           </div>
 
           <button class="submit" type="submit">Отправить ответ</button>
+          <div class="status" id="formStatus"></div>
         </form>
       </section>
     </main>
@@ -979,51 +980,46 @@
       });
     }, { threshold: 0.12 });
     reveals.forEach(el => observer.observe(el));
-
+  
     const form = document.getElementById('rsvpForm');
     const formStatus = document.getElementById('formStatus');
-    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbwNhbxZupTWNpFhb2rsMzjdgpbHRMBz71ZBiGsslNceQlAzI7CRonCN7N2NrRnyZuKi/exec';
-
+    const appsScriptUrl = 'https://script.google.com/macros/s/AKfycby75M59KsQbdtER5a5kJqWwbWlraHsasQ_P68qV-trjFem4-pK7b6S-b4pHwc2mYQxB/exec';
+  
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
+  
       if (!appsScriptUrl || !appsScriptUrl.startsWith('https://script.google.com/macros/s/')) {
         formStatus.textContent = 'Укажите корректный URL опубликованного Google Apps Script.';
         return;
       }
-
+  
       const submitButton = form.querySelector('.submit');
-
+  
       const payload = {
         firstName: form.elements.firstName.value.trim(),
         lastName: form.elements.lastName.value.trim(),
         attendance: form.elements.attendance.value,
         submittedAt: new Date().toISOString()
       };
-
-      if (!payload.firstName || !payload.lastName || !payload.attendance || !payload.plusOne) {
+  
+      if (!payload.firstName || !payload.lastName || !payload.attendance) {
         formStatus.textContent = 'Пожалуйста, заполните все обязательные поля.';
         return;
       }
-
+  
       submitButton.disabled = true;
       formStatus.textContent = 'Отправляем ответ...';
-
+  
       try {
-        const response = await fetch(appsScriptUrl, {
+        await fetch(appsScriptUrl, {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'text/plain;charset=utf-8'
           },
           body: JSON.stringify(payload)
         });
-
-        const responseText = await response.text();
-
-        if (!response.ok) {
-          throw new Error(responseText || 'Request failed');
-        }
-
+  
         form.reset();
         formStatus.textContent = 'Спасибо! Ваш ответ отправлен.';
       } catch (err) {
