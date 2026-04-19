@@ -509,6 +509,40 @@
       font-weight: 300;
     }
 
+    .yandex-form-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(197,204,208,.30);
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 10px 28px rgba(86, 97, 88, 0.05);
+    }
+
+    .yandex-form-frame {
+      display: block;
+      width: 100%;
+      min-height: 520px;
+      border: 0;
+      background: transparent;
+    }
+
+    .yandex-fallback {
+      max-width: 560px;
+      margin: 18px auto 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .yandex-fallback a {
+      color: #425147;
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(66,81,71,.34);
+    }
+
     form {
       max-width: 560px;
       margin: 0 auto;
@@ -938,38 +972,21 @@
           Будем ждать ваш ответ заранее
         </div>
       
-        <form id="rsvpForm">
-          <div class="field">
-            <label for="firstName">Имя</label>
-            <input id="firstName" name="firstName" type="text" required>
-          </div>
-      
-          <div class="field">
-            <label for="lastName">Фамилия</label>
-            <input id="lastName" name="lastName" type="text" required>
-          </div>
-      
-          <div class="field">
-            <label for="ceremonyAttendance">Придёте ли на регистрацию в ЗАГС?</label>
-            <select id="ceremonyAttendance" name="ceremonyAttendance" required>
-              <option value="">Выберите вариант</option>
-              <option>Да, приду</option>
-              <option>Нет, не смогу</option>
-            </select>
-          </div>
-      
-          <div class="field">
-            <label for="banquetAttendance">Придёте ли на банкет?</label>
-            <select id="banquetAttendance" name="banquetAttendance" required>
-              <option value="">Выберите вариант</option>
-              <option>Да, приду</option>
-              <option>Нет, не смогу</option>
-            </select>
-          </div>
-      
-          <button class="submit" type="submit">Отправить ответ</button>
-          <div class="status" id="formStatus"></div>
-        </form>
+        <div class="yandex-form-wrap">
+          <iframe
+            class="yandex-form-frame"
+            src="https://forms.yandex.ru/u/69e49c8890290224aab2e13d/?iframe=1"
+            name="ya-form-69e49c8890290224aab2e13d"
+            title="Анкета гостя"
+            loading="lazy"
+            scrolling="auto"
+            frameborder="0"
+          ></iframe>
+        </div>
+
+        <div class="yandex-fallback">
+          Не загружается форма? Напишите нам напрямую!
+        </div>
       </section>
   
       <footer class="footer" data-reveal>
@@ -977,21 +994,8 @@
       </footer>
     </div>
   
+    <script src="https://forms.yandex.ru/_static/embed.js"></script>
     <script>
-      // ===========================================================
-      //  НАСТРОЙКИ TELEGRAM-БОТА
-      //  Замените эти значения на свои (см. инструкцию)
-      // ===========================================================
-      const BOT_TOKEN = '8694000546:AAH8MLbEs5NNf2nX4oq7sj-2mt5ds8bVMgQ';
-
-      // Список получателей — впишите chat_id всех, кому нужно
-      // отправлять ответы. Можно добавить ещё, разделив запятой.
-      const CHAT_IDS = [
-        '803070680',
-        '705203904'
-      ];
-      // ===========================================================
-
       // Анимация появления секций при скролле
       const reveals = document.querySelectorAll('[data-reveal]');
       const observer = new IntersectionObserver((entries) => {
@@ -1003,94 +1007,6 @@
         });
       }, { threshold: 0.12 });
       reveals.forEach(el => observer.observe(el));
-
-      // Экранирование HTML-символов в данных гостя,
-      // чтобы они не сломали форматирование сообщения в Telegram
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-      }
-
-      const form = document.getElementById('rsvpForm');
-      const formStatus = document.getElementById('formStatus');
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const submitButton = form.querySelector('.submit');
-
-        const firstName = form.elements.firstName.value.trim();
-        const lastName  = form.elements.lastName.value.trim();
-        const ceremony  = form.elements.ceremonyAttendance.value;
-        const banquet   = form.elements.banquetAttendance.value;
-
-        if (!firstName || !lastName || !ceremony || !banquet) {
-          formStatus.textContent = 'Пожалуйста, заполните все обязательные поля.';
-          return;
-        }
-
-        // Формируем красивую дату по-русски
-        const now = new Date();
-        const dateStr = now.toLocaleString('ru-RU', {
-          day: '2-digit', month: '2-digit', year: 'numeric',
-          hour: '2-digit', minute: '2-digit'
-        });
-
-        // Сообщение, которое придёт вам в Telegram
-        const message =
-          `🤍 <b>Новый ответ на приглашение</b>\n\n` +
-          `<b>Гость:</b> ${escapeHtml(firstName)} ${escapeHtml(lastName)}\n` +
-          `<b>Регистрация в ЗАГС:</b> ${escapeHtml(ceremony)}\n` +
-          `<b>Банкет:</b> ${escapeHtml(banquet)}\n\n` +
-          `<i>Отправлено: ${dateStr}</i>`;
-
-        submitButton.disabled = true;
-        formStatus.textContent = 'Отправляем ответ...';
-
-        try {
-          // Отправляем сообщение всем получателям параллельно
-          const results = await Promise.all(
-            CHAT_IDS.map(chatId =>
-              fetch(
-                `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message,
-                    parse_mode: 'HTML'
-                  })
-                }
-              ).then(r => r.json())
-            )
-          );
-
-          // Считаем успехом, если хотя бы один получатель получил сообщение —
-          // тогда гость не увидит ошибку, даже если кто-то один не "разбудил" бота
-          const anyOk = results.some(r => r && r.ok);
-          const allOk = results.every(r => r && r.ok);
-
-          if (!allOk) {
-            console.error('Telegram API errors:', results.filter(r => !r.ok));
-          }
-
-          if (anyOk) {
-            form.reset();
-            formStatus.textContent = 'Спасибо! Ваш ответ отправлен.';
-          } else {
-            throw new Error('Не удалось отправить ни одному получателю');
-          }
-        } catch (err) {
-          console.error(err);
-          formStatus.textContent =
-            'Не удалось отправить ответ. Пожалуйста, напишите нам напрямую.';
-        } finally {
-          submitButton.disabled = false;
-        }
-      });
     </script>
 </body>
 </html>
