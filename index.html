@@ -972,20 +972,39 @@
           Будем ждать ваш ответ заранее
         </div>
       
-        <div class="yandex-form-wrap">
-          <iframe
-            class="yandex-form-frame"
-            src="https://forms.yandex.ru/u/69e49c8890290224aab2e13d/?iframe=1"
-            name="ya-form-69e49c8890290224aab2e13d"
-            title="Анкета гостя"
-            loading="lazy"
-            scrolling="auto"
-            frameborder="0"
-          ></iframe>
-        </div>
+        <form id="rsvpForm">
+          <div class="field">
+            <label for="fullName">Как вас зовут?</label>
+            <input id="fullName" name="fullName" type="text" required>
+          </div>
+
+          <div class="field">
+            <label for="ceremonyAttendance">Придёте ли на регистрацию в ЗАГС?</label>
+            <select id="ceremonyAttendance" name="ceremonyAttendance" required>
+              <option value="">Выберите вариант</option>
+              <option>Да, приду</option>
+              <option>Нет, не смогу</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="banquetAttendance">Придёте ли на банкет?</label>
+            <select id="banquetAttendance" name="banquetAttendance" required>
+              <option value="">Выберите вариант</option>
+              <option>Да, приду</option>
+              <option>Нет, не смогу</option>
+            </select>
+          </div>
+
+          <button class="submit" type="submit">Отправить ответ</button>
+          <div class="status" id="formStatus"></div>
+        </form>
 
         <div class="yandex-fallback">
-          Не загружается форма? Напишите нам напрямую!
+          Если ответ не отправляется, напишите нам напрямую:
+          <a href="tel:+7XXXXXXXXXX">+7&nbsp;XXX&nbsp;XXX&nbsp;XX&nbsp;XX</a>
+          или в Telegram
+          <a href="https://t.me/ВАШ_USERNAME" target="_blank" rel="noopener noreferrer">@ВАШ_USERNAME</a>
         </div>
       </section>
   
@@ -994,8 +1013,19 @@
       </footer>
     </div>
   
-    <script src="https://forms.yandex.ru/_static/embed.js"></script>
     <script>
+      // ===========================================================
+      //  НАСТРОЙКИ GOOGLE ФОРМЫ
+      // ===========================================================
+      const GOOGLE_FORM_ID = '1FAIpQLSeQ0lv4H3YQq-fNhF8_Zv4b3fPRBvus0YF_1whLToa6HJ8UVg';
+      const ENTRY_NAME     = 'entry.1171124303';
+      const ENTRY_CEREMONY = 'entry.910868125';
+      const ENTRY_BANQUET  = 'entry.580152108';
+      // ===========================================================
+
+      const FORM_SUBMIT_URL =
+        `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
+
       // Анимация появления секций при скролле
       const reveals = document.querySelectorAll('[data-reveal]');
       const observer = new IntersectionObserver((entries) => {
@@ -1007,6 +1037,52 @@
         });
       }, { threshold: 0.12 });
       reveals.forEach(el => observer.observe(el));
+
+      const form = document.getElementById('rsvpForm');
+      const formStatus = document.getElementById('formStatus');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const submitButton = form.querySelector('.submit');
+
+        const fullName = form.elements.fullName.value.trim();
+        const ceremony = form.elements.ceremonyAttendance.value;
+        const banquet  = form.elements.banquetAttendance.value;
+
+        if (!fullName || !ceremony || !banquet) {
+          formStatus.textContent = 'Пожалуйста, заполните все обязательные поля.';
+          return;
+        }
+
+        submitButton.disabled = true;
+        formStatus.textContent = 'Отправляем ответ...';
+
+        // Готовим данные в формате, который понимает Google Форма
+        const formData = new FormData();
+        formData.append(ENTRY_NAME,     fullName);
+        formData.append(ENTRY_CEREMONY, ceremony);
+        formData.append(ENTRY_BANQUET,  banquet);
+
+        try {
+          // mode: 'no-cors' — Google не разрешает читать ответ из браузера,
+          // но запрос всё равно доходит и данные сохраняются в таблицу.
+          await fetch(FORM_SUBMIT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
+          });
+
+          form.reset();
+          formStatus.textContent = 'Спасибо! Ваш ответ отправлен.';
+        } catch (err) {
+          console.error(err);
+          formStatus.textContent =
+            'Не удалось отправить ответ. Пожалуйста, напишите нам напрямую.';
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
     </script>
 </body>
 </html>
