@@ -978,6 +978,21 @@
     </div>
   
     <script>
+      // ===========================================================
+      //  НАСТРОЙКИ TELEGRAM-БОТА
+      //  Замените эти значения на свои (см. инструкцию)
+      // ===========================================================
+      const BOT_TOKEN = '8694000546:AAH8MLbEs5NNf2nX4oq7sj-2mt5ds8bVMgQ';
+
+      // Список получателей — впишите chat_id всех, кому нужно
+      // отправлять ответы. Можно добавить ещё, разделив запятой.
+      const CHAT_IDS = [
+        '803070680',
+        '705203904'
+      ];
+      // ===========================================================
+
+      // Анимация появления секций при скролле
       const reveals = document.querySelectorAll('[data-reveal]');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -988,57 +1003,90 @@
         });
       }, { threshold: 0.12 });
       reveals.forEach(el => observer.observe(el));
-    
+
+      // Экранирование HTML-символов в данных гостя,
+      // чтобы они не сломали форматирование сообщения в Telegram
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
       const form = document.getElementById('rsvpForm');
       const formStatus = document.getElementById('formStatus');
-      const appsScriptUrl = 'https://script.google.com/macros/s/AKfycby75M59KsQbdtER5a5kJqWwbWlraHsasQ_P68qV-trjFem4-pK7b6S-b4pHwc2mYQxB/exec';
-    
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-    
-        if (!appsScriptUrl || !appsScriptUrl.startsWith('https://script.google.com/macros/s/')) {
-          formStatus.textContent = 'Укажите корректный URL опубликованного Google Apps Script.';
-          return;
-        }
-    
+
         const submitButton = form.querySelector('.submit');
-    
-        const payload = {
-          firstName: form.elements.firstName.value.trim(),
-          lastName: form.elements.lastName.value.trim(),
-          ceremonyAttendance: form.elements.ceremonyAttendance.value,
-          banquetAttendance: form.elements.banquetAttendance.value,
-          submittedAt: new Date().toISOString()
-        };
-    
-        if (
-          !payload.firstName ||
-          !payload.lastName ||
-          !payload.ceremonyAttendance ||
-          !payload.banquetAttendance
-        ) {
+
+        const firstName = form.elements.firstName.value.trim();
+        const lastName  = form.elements.lastName.value.trim();
+        const ceremony  = form.elements.ceremonyAttendance.value;
+        const banquet   = form.elements.banquetAttendance.value;
+
+        if (!firstName || !lastName || !ceremony || !banquet) {
           formStatus.textContent = 'Пожалуйста, заполните все обязательные поля.';
           return;
         }
-    
+
+        // Формируем красивую дату по-русски
+        const now = new Date();
+        const dateStr = now.toLocaleString('ru-RU', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        // Сообщение, которое придёт вам в Telegram
+        const message =
+          `🤍 <b>Новый ответ на приглашение</b>\n\n` +
+          `<b>Гость:</b> ${escapeHtml(firstName)} ${escapeHtml(lastName)}\n` +
+          `<b>Регистрация в ЗАГС:</b> ${escapeHtml(ceremony)}\n` +
+          `<b>Банкет:</b> ${escapeHtml(banquet)}\n\n` +
+          `<i>Отправлено: ${dateStr}</i>`;
+
         submitButton.disabled = true;
         formStatus.textContent = 'Отправляем ответ...';
-    
+
         try {
-          await fetch(appsScriptUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'text/plain;charset=utf-8'
-            },
-            body: JSON.stringify(payload)
-          });
-    
-          form.reset();
-          formStatus.textContent = 'Спасибо! Ваш ответ отправлен.';
+          // Отправляем сообщение всем получателям параллельно
+          const results = await Promise.all(
+            CHAT_IDS.map(chatId =>
+              fetch(
+                `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                  })
+                }
+              ).then(r => r.json())
+            )
+          );
+
+          // Считаем успехом, если хотя бы один получатель получил сообщение —
+          // тогда гость не увидит ошибку, даже если кто-то один не "разбудил" бота
+          const anyOk = results.some(r => r && r.ok);
+          const allOk = results.every(r => r && r.ok);
+
+          if (!allOk) {
+            console.error('Telegram API errors:', results.filter(r => !r.ok));
+          }
+
+          if (anyOk) {
+            form.reset();
+            formStatus.textContent = 'Спасибо! Ваш ответ отправлен.';
+          } else {
+            throw new Error('Не удалось отправить ни одному получателю');
+          }
         } catch (err) {
           console.error(err);
-          formStatus.textContent = 'Не удалось отправить форму. Проверьте публикацию Apps Script и доступ к нему.';
+          formStatus.textContent =
+            'Не удалось отправить ответ. Пожалуйста, напишите нам напрямую.';
         } finally {
           submitButton.disabled = false;
         }
